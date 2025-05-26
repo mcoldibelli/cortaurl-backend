@@ -1,7 +1,7 @@
-import http
-import os, json, boto3
+import http, os, json, boto3, sys
 from moto import mock_aws
 import pytest
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../layers/shared/python')))
 
 from functions.shorten.app import lambda_handler
 
