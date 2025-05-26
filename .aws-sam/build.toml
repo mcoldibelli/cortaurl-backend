@@ -18,4 +18,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["RedirectFunction"]
 
+[function_build_definitions.0c089770-1579-44ba-8e4a-5c64463ba2c2]
+codeuri = "/Users/mcoldibelli/Documents/projects/url-shortener-backend/functions/list_urls"
+runtime = "python3.13"
+architecture = "arm64"
+handler = "app.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ListUrlsFunction"]
+
 [layer_build_definitions]

@@ -86,6 +86,31 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref ShortURLsTable
 
+  ListUrlsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ListUrlsFunction
+      CodeUri: functions/list_urls/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref SharedLayer
+      Environment:
+        Variables:
+          SHORT_URLS_TABLE: !Ref ShortURLsTable
+      Events:
+        ListUrlsApi:
+          Type: Api
+          Properties:
+            Path: /urls
+            Method: GET
+            RestApiId: !Ref ApiGateway
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ShortURLsTable
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
