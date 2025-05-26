@@ -55,6 +55,9 @@ Resources:
             Path: /shorten
             Method: POST
             RestApiId: !Ref ApiGateway
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ShortURLsTable
 
   ApiGateway:
     Type: AWS::Serverless::Api

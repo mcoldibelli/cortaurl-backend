@@ -1,16 +1,20 @@
-import datetime
+from datetime import datetime
 from http import HTTPStatus
 import os, json
 from db import get_table
 from utils import generate_code, is_valid_url
 
 def lambda_handler(event, context):
-    user = event['requestContext']['authorizer']['claims']['sub']
+    try:
+        user = event['requestContext']['authorizer']['claims']['sub']
+    except (KeyError, TypeError):
+        user = 'local-user'
+
     data = json.loads(event['body'])
     original_url = data.get('original_url')
 
     if not original_url or not is_valid_url(original_url):
-        return {"statusCode": HTTPStatus.BAD_REQUEST, "body": "Invalid or missing URL"}
+        return json.dumps({"statusCode": HTTPStatus.BAD_REQUEST, "body": "Invalid or missing URL"})
     
     table = get_table()
     short_code = generate_code()
@@ -24,8 +28,8 @@ def lambda_handler(event, context):
 
     return {
         "statusCode": HTTPStatus.CREATED,
-        "body": {
+        "body": json.dumps({
             "short_code": short_code,
             "original_url": original_url
-        }
+        })
     }
