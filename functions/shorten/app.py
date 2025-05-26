@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
 import os, json
-from layers.shared.python.db import get_table
-from layers.shared.python.utils import generate_code, is_valid_url
+from utils import generate_code, is_valid_url
+from db import get_table
 
 def lambda_handler(event, context):
     try:
