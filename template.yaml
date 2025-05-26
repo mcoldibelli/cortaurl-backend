@@ -5,6 +5,13 @@ Description: >
 
   Sample SAM Template for url-shortener-backend
 
+Globals:
+  Function:
+    Timeout: 10
+    Environment:
+      Variables:
+        SHORT_URLS_TABLE: !Ref ShortURLsTable
+
 Resources:
   ShortURLsTable:
     Type: AWS::DynamoDB::Table
@@ -18,19 +25,38 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
   
-  UserPool:
-    Type: AWS::Cognito::UserPool
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
     Properties:
-      UserPoolName: ShortURLsUserPool
-    
-  UserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
+      LayerName: shared-layer
+      Description: "Shared code for all functions"
+      ContentUri: layers/shared/
+      CompatibleRuntimes:
+        - python3.13
+
+  ShortenFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      ClientName: ShortenerClient
-      UserPoolId: !Ref UserPool
-      GenerateSecret: false
+      FunctionName: ShortenFunction
+      CodeUri: functions/shorten/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref SharedLayer
+      Environment:
+        Variables:
+          SHORT_URLS_TABLE: !Ref ShortURLsTable
+      Events:
+        ShortenApi:
+          Type: Api
+          Properties:
+            Path: /shorten
+            Method: POST
+            RestApiId: !Ref ApiGateway
   
-  Api:
+  ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
@@ -39,3 +65,15 @@ Resources:
         Authorizers:
           CognitoAuth:
             UserPoolArn: !GetAtt UserPool.Arn
+
+  UserPool:
+  Type: AWS::Cognito::UserPool
+  Properties:
+    UserPoolName: ShortURLsUserPool
+  
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ShortenerClient
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
