@@ -24,7 +24,7 @@ Resources:
         - AttributeName: short_code
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-  
+
   SharedLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -55,7 +55,7 @@ Resources:
             Path: /shorten
             Method: POST
             RestApiId: !Ref ApiGateway
-  
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -67,10 +67,10 @@ Resources:
             UserPoolArn: !GetAtt UserPool.Arn
 
   UserPool:
-  Type: AWS::Cognito::UserPool
-  Properties:
-    UserPoolName: ShortURLsUserPool
-  
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ShortURLsUserPool
+
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
