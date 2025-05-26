@@ -59,6 +59,33 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref ShortURLsTable
 
+  RedirectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RedirectFunction
+      CodeUri: functions/redirect/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref SharedLayer
+      Environment:
+        Variables:
+          SHORT_URLS_TABLE: !Ref ShortURLsTable
+      Events:
+        RedirectApi:
+          Type: Api
+          Properties:
+            Path: /{short_code}
+            Method: GET
+            RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ShortURLsTable
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:

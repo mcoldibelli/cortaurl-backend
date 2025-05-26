@@ -9,4 +9,13 @@ manifest_hash = "315d722d41c0c8c7355548b16e738466"
 packagetype = "Zip"
 functions = ["ShortenFunction"]
 
+[function_build_definitions.0b974f0b-7028-4735-a54b-1ea73a90be37]
+codeuri = "/Users/mcoldibelli/Documents/projects/url-shortener-backend/functions/redirect"
+runtime = "python3.13"
+architecture = "arm64"
+handler = "app.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["RedirectFunction"]
+
 [layer_build_definitions]
