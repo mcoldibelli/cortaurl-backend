@@ -27,4 +27,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["ListUrlsFunction"]
 
+[function_build_definitions.0ea375f4-49ed-4748-8d78-965643d33f39]
+codeuri = "/Users/mcoldibelli/Documents/projects/url-shortener-backend/functions/analytics"
+runtime = "python3.13"
+architecture = "arm64"
+handler = "app.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["AnalyticsFunction"]
+
 [layer_build_definitions]

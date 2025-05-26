@@ -131,6 +131,31 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref ShortURLsTable
 
+  AnalyticsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: AnalyticsFunction
+      CodeUri: functions/analytics/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref SharedLayer
+      Environment:
+        Variables:
+          CLICK_EVENTS_TABLE: !Ref ClickEventsTable
+      Events:
+        AnalyticsApi:
+          Type: Api
+          Properties:
+            Path: /urls/{short_code}/analytics
+            Method: GET
+            RestApiId: !Ref ApiGateway
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClickEventsTable
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
