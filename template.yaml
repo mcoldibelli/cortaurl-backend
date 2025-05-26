@@ -29,3 +29,13 @@ Resources:
       ClientName: ShortenerClient
       UserPoolId: !Ref UserPool
       GenerateSecret: false
+  
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: CognitoAuth
+        Authorizers:
+          CognitoAuth:
+            UserPoolArn: !GetAtt UserPool.Arn
