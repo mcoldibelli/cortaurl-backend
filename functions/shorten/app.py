@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 import os, json
 from layers.shared.python.db import get_table
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         'short_code': short_code,
         'original_url': original_url,
         'created_by': user,
-        'created_at': datetime.now().isoformat()
+        'created_at': datetime.now(timezone.utc).isoformat()
     }
     table.put_item(Item=item)
 
