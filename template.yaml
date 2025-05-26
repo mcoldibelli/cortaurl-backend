@@ -3,7 +3,8 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   url-shortener-backend
 
-  Sample SAM Template for url-shortener-backend
+  A URL shortener service with Cognito authentication,
+  DynamoDB storage, and API Gateway integration.
 
 Globals:
   Function:
@@ -23,6 +24,22 @@ Resources:
       KeySchema:
         - AttributeName: short_code
           KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  ClickEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClickEvents
+      AttributeDefinitions:
+        - AttributeName: short_code
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: short_code
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
 
   SharedLayer:
@@ -73,6 +90,7 @@ Resources:
       Environment:
         Variables:
           SHORT_URLS_TABLE: !Ref ShortURLsTable
+          CLICK_EVENTS_TABLE: !Ref ClickEventsTable
       Events:
         RedirectApi:
           Type: Api
@@ -85,6 +103,8 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref ShortURLsTable
+        - DynamoDBWritePolicy:
+            TableName: !Ref ClickEventsTable
 
   ListUrlsFunction:
     Type: AWS::Serverless::Function
