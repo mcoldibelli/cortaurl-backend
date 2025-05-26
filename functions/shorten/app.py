@@ -1,8 +1,8 @@
 from datetime import datetime
 from http import HTTPStatus
 import os, json
-from db import get_table
-from utils import generate_code, is_valid_url
+from layers.shared.python.db import get_table
+from layers.shared.python.utils import generate_code, is_valid_url
 
 def lambda_handler(event, context):
     try:
@@ -14,7 +14,10 @@ def lambda_handler(event, context):
     original_url = data.get('original_url')
 
     if not original_url or not is_valid_url(original_url):
-        return json.dumps({"statusCode": HTTPStatus.BAD_REQUEST, "body": "Invalid or missing URL"})
+        return {
+            "statusCode": HTTPStatus.BAD_REQUEST,
+            "body": json.dumps({"error": "Invalid or missing URL"})
+        }
     
     table = get_table()
     short_code = generate_code()
