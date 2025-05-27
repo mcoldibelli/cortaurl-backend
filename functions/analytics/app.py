@@ -4,9 +4,35 @@ from collections import Counter
 
 dynamodb = boto3.resource('dynamodb')
 click_table = dynamodb.Table(os.environ['CLICK_EVENTS_TABLE'])
+url_table = dynamodb.Table(os.environ['SHORT_URLS_TABLE'])
 
 def lambda_handler(event, context):
+    # Get the user ID from the JWT token
+    claims = event.get('requestContext', {}).get('authorizer', {}).get('claims', {})
+    user_id = claims.get('sub')
+
+    if not user_id:
+        return {
+            "statusCode": HTTPStatus.UNAUTHORIZED,
+            "body": json.dumps({"error": "Missing authentication"})
+        }
+
     short_code = event['pathParameters']['short_code']
+
+    # Fetch the short URL from the database
+    url_resp = url_table.get_item(Key={'short_code': short_code})
+    url_item = url_resp.get('Item')
+    if not url_item:
+        return {
+            "statusCode": HTTPStatus.NOT_FOUND,
+            "body": json.dumps({"error": "Short URL not found"})
+        }
+
+    if url_item['created_by'] != user_id:
+        return {
+            "statusCode": HTTPStatus.FORBIDDEN,
+            "body": json.dumps({"error": "Not authorized to access this URL"})
+        }
 
     # Get all click events for this short_code
     response = click_table.query(
