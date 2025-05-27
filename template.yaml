@@ -76,6 +76,33 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref ShortURLsTable
 
+  DeleteUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteUrlFunction
+      CodeUri: functions/delete_url/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref SharedLayer
+      Environment:
+        Variables:
+          SHORT_URLS_TABLE: !Ref ShortURLsTable
+      Events:
+        DeleteUrlApi:
+          Type: Api
+          Properties:
+            Path: /urls/{short_code}
+            Method: DELETE
+            RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: CognitoAuth
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ShortURLsTable
+
   RedirectFunction:
     Type: AWS::Serverless::Function
     Properties:

@@ -36,4 +36,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["AnalyticsFunction"]
 
+[function_build_definitions.0162472a-5246-4b22-8868-126c1f5a8165]
+codeuri = "/Users/mcoldibelli/Documents/projects/url-shortener-backend/functions/delete_url"
+runtime = "python3.13"
+architecture = "arm64"
+handler = "app.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["DeleteUrlFunction"]
+
 [layer_build_definitions]
