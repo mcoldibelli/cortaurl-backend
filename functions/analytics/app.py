@@ -1,3 +1,4 @@
+import datetime
 import os, json, boto3
 from http import HTTPStatus
 from collections import Counter
@@ -5,6 +6,10 @@ from collections import Counter
 dynamodb = boto3.resource('dynamodb')
 click_table = dynamodb.Table(os.environ['CLICK_EVENTS_TABLE'])
 url_table = dynamodb.Table(os.environ['SHORT_URLS_TABLE'])
+
+def clicks_per_day(items):
+    days = [datetime.fromisoformat(item['timestamp']).date() for item in items]
+    return Counter(days)
 
 def lambda_handler(event, context):
     # Get the user ID from the JWT token
@@ -40,6 +45,7 @@ def lambda_handler(event, context):
     )
 
     items = response.get('Items', [])
+    daily = clicks_per_day(items)
 
     total_clicks = len(items)
     unique_ips = len({item['ip'] for item in items if 'ip' in item})
@@ -56,6 +62,7 @@ def lambda_handler(event, context):
             "unique_visitors": unique_ips,
             "countries": country_counts.most_common(),
             "referrers": referrer_counts.most_common(),
-            "devices": user_agent_counts.most_common()
+            "devices": user_agent_counts.most_common(),
+            "clicks_over_time": sorted(daily.items())
         })
     }
