@@ -197,6 +197,20 @@ Resources:
         Authorizers:
           CognitoAuth:
             UserPoolArn: !GetAtt UserPool.Arn
+      Cors:
+        AllowOrigin:
+          - "https://cortaurl.com.br"
+          - "http://localhost:5173"
+          - "http://cortaurl.vercel.app"
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+          - Accept
+        AllowMethods:
+          - GET
+          - POST
+          - DELETE
+          - OPTIONS
 
   UserPool:
     Type: AWS::Cognito::UserPool
