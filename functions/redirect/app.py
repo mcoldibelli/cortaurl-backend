@@ -12,6 +12,14 @@ def lambda_handler(event, context):
     # Get the short URL from the database
     response = table.get_item(Key={'short_code': short_code})
     item = response.get('Item')
+    expires_at = item.get('expires_at')
+
+    if expires_at and datetime.now(timezone.utc) > datetime.fromisoformat(expires_at):
+        return {
+            "statusCode": HTTPStatus.GONE,
+            "body": json.dumps({"error": "This shortURL has expired"})
+        }
+
     if not item:
         return {
             "statusCode": HTTPStatus.NOT_FOUND,

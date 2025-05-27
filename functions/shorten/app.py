@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 import os, json
 from utils import generate_code, is_valid_url
@@ -11,6 +11,8 @@ def lambda_handler(event, context):
         user = 'local-user'
 
     data = json.loads(event['body'])
+    expires_in_days = data.get('expires_in_days', 30)
+    expires_at = (datetime.now(timezone.utc) + timedelta(days=expires_in_days)).isoformat()
     original_url = data.get('original_url')
 
     if not original_url or not is_valid_url(original_url):
@@ -25,7 +27,8 @@ def lambda_handler(event, context):
         'short_code': short_code,
         'original_url': original_url,
         'created_by': user,
-        'created_at': datetime.now(timezone.utc).isoformat()
+        'created_at': datetime.now(timezone.utc).isoformat(),
+        'expires_at': expires_at
     }
     table.put_item(Item=item)
 
