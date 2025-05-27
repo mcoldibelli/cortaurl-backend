@@ -145,6 +145,7 @@ Resources:
       Environment:
         Variables:
           CLICK_EVENTS_TABLE: !Ref ClickEventsTable
+          SHORT_URLS_TABLE: !Ref ShortURLsTable
       Events:
         AnalyticsApi:
           Type: Api
@@ -152,9 +153,13 @@ Resources:
             Path: /urls/{short_code}/analytics
             Method: GET
             RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: CognitoAuth
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref ClickEventsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref ShortURLsTable
 
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -170,6 +175,10 @@ Resources:
     Type: AWS::Cognito::UserPool
     Properties:
       UserPoolName: ShortURLsUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
 
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
