@@ -63,6 +63,9 @@ def lambda_handler(event, context):
             "countries": country_counts.most_common(),
             "referrers": referrer_counts.most_common(),
             "devices": user_agent_counts.most_common(),
-            "clicks_over_time": sorted(daily.items())
+            "clicks_over_time": [
+                {"date": str(date), "clicks": count} 
+                for date, count in sorted(daily.items())
+            ]
         })
     }
