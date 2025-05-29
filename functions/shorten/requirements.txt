@@ -1,1 +1,3 @@
-# No external requirements needed
+firebase-admin
+grpcio>=1.67.0
+boto3

@@ -1,0 +1,2 @@
+firebase-admin
+grpcio>=1.67.0
