@@ -1,11 +1,11 @@
 import string
-from layers.shared.python.utils import generate_code, is_valid_url
+from layers.shared.python.utils import generate_code, is_valid_domain
 
-def test_valid_url():
-    assert is_valid_url("https://google.com")
-    assert is_valid_url("http://test.com")
-    assert not is_valid_url("ftp://test.com")
-    assert not is_valid_url("just-text")
+def test_valid_domain():
+    assert is_valid_domain("https://google.com")
+    assert is_valid_domain("http://test.com")
+    assert not is_valid_domain("ftp://test.com")
+    assert not is_valid_domain("just-text")
 
 def test_generate_code_default_length():
     code = generate_code()

@@ -2,6 +2,7 @@ import datetime
 import os, json, boto3
 from http import HTTPStatus
 from collections import Counter
+from firebase_auth import require_auth
 
 dynamodb = boto3.resource('dynamodb')
 click_table = dynamodb.Table(os.environ['CLICK_EVENTS_TABLE'])
@@ -11,17 +12,9 @@ def clicks_per_day(items):
     days = [datetime.fromisoformat(item['timestamp']).date() for item in items]
     return Counter(days)
 
+@require_auth
 def lambda_handler(event, context):
-    # Get the user ID from the JWT token
-    claims = event.get('requestContext', {}).get('authorizer', {}).get('claims', {})
-    user_id = claims.get('sub')
-
-    if not user_id:
-        return {
-            "statusCode": HTTPStatus.UNAUTHORIZED,
-            "body": json.dumps({"error": "Missing authentication"})
-        }
-
+    user_id = event['user']['uid']  # Get user ID from Firebase token
     short_code = event['pathParameters']['short_code']
 
     # Fetch the short URL from the database
