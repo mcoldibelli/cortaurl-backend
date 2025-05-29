@@ -19,6 +19,7 @@ resolve_s3 = true
 s3_prefix = "url-shortener-backend"
 region = "us-east-2"
 image_repositories = []
+parameter_overrides = "FirebaseProjectId=\"cortaurl-cf7ed\" FirebasePrivateKeyId=\"74e4748f3f5dc0fb2f2997f2f3299287854e7c11\" FirebaseClientEmail=\"firebase-adminsdk-fbsvc@cortaurl-cf7ed.iam.gserviceaccount.com\" FirebaseClientId=\"106894202636584448919\" FirebaseClientCertUrl=\"https://www.googleapis.com/oauth2/v1/certs\""
 
 [default.package.parameters]
 resolve_s3 = true

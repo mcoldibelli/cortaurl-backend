@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   url-shortener-backend
-  A URL shortener with Cognito, DynamoDB and API Gateway.
+  A URL shortener with Firebase Auth, DynamoDB and API Gateway.
 
 Globals:
   Function:
@@ -11,6 +11,28 @@ Globals:
       Variables:
         SHORT_URLS_TABLE: !Ref ShortURLsTable
         CLICK_EVENTS_TABLE: !Ref ClickEventsTable
+        FIREBASE_SSM_PATH: "/cortaurl-firebase"
+
+Parameters:
+  FirebaseProjectId:
+    Type: String
+    Description: Firebase Project ID
+  FirebasePrivateKeyId:
+    Type: String
+    Description: Firebase Private Key ID
+  FirebasePrivateKey:
+    Type: String
+    Description: Firebase Private Key
+    NoEcho: true
+  FirebaseClientEmail:
+    Type: String
+    Description: Firebase Client Email
+  FirebaseClientId:
+    Type: String
+    Description: Firebase Client ID
+  FirebaseClientCertUrl:
+    Type: String
+    Description: Firebase Client Certificate URL
 
 Resources:
   ShortURLsTable:
@@ -58,7 +80,7 @@ Resources:
       CodeUri: functions/shorten/
       Handler: app.lambda_handler
       Runtime: python3.13
-      Architectures: [arm64]
+      Architectures: [x86_64]
       Layers: [!Ref SharedLayer]
       Events:
         ShortenApi:
@@ -67,7 +89,20 @@ Resources:
             Path: /shorten
             Method: POST
             RestApiId: !Ref ApiGateway
-      Policies: [DynamoDBCrudPolicy: {TableName: !Ref ShortURLsTable}]
+        ShortenApiOptions:
+          Type: Api
+          Properties:
+            Path: /shorten
+            Method: OPTIONS
+            RestApiId: !Ref ApiGateway
+      Policies:
+        - DynamoDBCrudPolicy: {TableName: !Ref ShortURLsTable}
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow 
+              Action:
+                - "ssm:GetParameter"
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cortaurl-firebase"
 
   DeleteUrlFunction:
     Type: AWS::Serverless::Function
@@ -76,7 +111,7 @@ Resources:
       CodeUri: functions/delete_url/
       Handler: app.lambda_handler
       Runtime: python3.13
-      Architectures: [arm64]
+      Architectures: [x86_64]
       Layers: [!Ref SharedLayer]
       Events:
         DeleteUrlApi:
@@ -85,8 +120,20 @@ Resources:
             Path: /urls/{short_code}
             Method: DELETE
             RestApiId: !Ref ApiGateway
-            Auth: { Authorizer: CognitoAuth }
-      Policies: [DynamoDBCrudPolicy: {TableName: !Ref ShortURLsTable}]
+        DeleteUrlApiOptions:
+          Type: Api
+          Properties:
+            Path: /urls/{short_code}
+            Method: OPTIONS
+            RestApiId: !Ref ApiGateway
+      Policies:
+        - DynamoDBCrudPolicy: {TableName: !Ref ShortURLsTable}
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow 
+              Action:
+                - "ssm:GetParameter"
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cortaurl-firebase"
 
   RedirectFunction:
     Type: AWS::Serverless::Function
@@ -95,7 +142,7 @@ Resources:
       CodeUri: functions/redirect/
       Handler: app.lambda_handler
       Runtime: python3.13
-      Architectures: [arm64]
+      Architectures: [x86_64]
       Layers: [!Ref SharedLayer]
       Environment: {Variables: {CLICK_EVENTS_TABLE: !Ref ClickEventsTable}}
       Events:
@@ -105,10 +152,15 @@ Resources:
             Path: /{short_code}
             Method: GET
             RestApiId: !Ref ApiGateway
-            Auth: { Authorizer: NONE }
       Policies:
         - DynamoDBReadPolicy: {TableName: !Ref ShortURLsTable}
         - DynamoDBWritePolicy: {TableName: !Ref ClickEventsTable}
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow 
+              Action:
+                - "ssm:GetParameter"
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cortaurl-firebase"
 
   ListUrlsFunction:
     Type: AWS::Serverless::Function
@@ -117,7 +169,7 @@ Resources:
       CodeUri: functions/list_urls/
       Handler: app.lambda_handler
       Runtime: python3.13
-      Architectures: [arm64]
+      Architectures: [x86_64]
       Layers: [!Ref SharedLayer]
       Events:
         ListUrlsApi:
@@ -126,8 +178,20 @@ Resources:
             Path: /urls
             Method: GET
             RestApiId: !Ref ApiGateway
-            Auth: { Authorizer: CognitoAuth }
-      Policies: [DynamoDBReadPolicy: {TableName: !Ref ShortURLsTable}]
+        ListUrlsApiOptions:
+          Type: Api
+          Properties:
+            Path: /urls
+            Method: OPTIONS
+            RestApiId: !Ref ApiGateway
+      Policies:
+        - DynamoDBReadPolicy: {TableName: !Ref ShortURLsTable}
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow 
+              Action:
+                - "ssm:GetParameter"
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cortaurl-firebase"
 
   AnalyticsFunction:
     Type: AWS::Serverless::Function
@@ -136,7 +200,7 @@ Resources:
       CodeUri: functions/analytics/
       Handler: app.lambda_handler
       Runtime: python3.13
-      Architectures: [arm64]
+      Architectures: [x86_64]
       Layers: [!Ref SharedLayer]
       Environment: {Variables: {CLICK_EVENTS_TABLE: !Ref ClickEventsTable}}
       Events:
@@ -146,25 +210,25 @@ Resources:
             Path: /urls/{short_code}/analytics
             Method: GET
             RestApiId: !Ref ApiGateway
-            Auth: {Authorizer: CognitoAuth}
       Policies:
         - DynamoDBReadPolicy: {TableName: !Ref ClickEventsTable}
         - DynamoDBReadPolicy: {TableName: !Ref ShortURLsTable}
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow 
+              Action:
+                - "ssm:GetParameter"
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cortaurl-firebase"
 
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
-      Auth:
-        DefaultAuthorizer: CognitoAuth
-        Authorizers:
-          CognitoAuth:
-            UserPoolArn: !GetAtt UserPool.Arn
       Cors:
         AllowOrigin:
           - "https://cortaurl.com.br"
+          - "https://www.cortaurl.com.br"
           - "http://localhost:5173"
-          - "http://cortaurl.vercel.app"
         AllowHeaders:
           - Authorization
           - Content-Type
@@ -175,27 +239,7 @@ Resources:
           - DELETE
           - OPTIONS
 
-  UserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      UserPoolName: ShortURLsUserPool
-      UsernameAttributes: [email]
-      AutoVerifiedAttributes: [email]
-
-  UserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      ClientName: ShortenerClient
-      UserPoolId: !Ref UserPool
-      GenerateSecret: false
-
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
     Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  UserPoolId:
-    Description: "Cognito User Pool ID"
-    Value: !Ref UserPool
-  UserPoolClientId:
-    Description: "Cognito User Pool Client ID"
-    Value: !Ref UserPoolClient
